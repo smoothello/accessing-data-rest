@@ -1,6 +1,14 @@
 spring:
-  devtools:
-    restart:
+  h2:
+    console:
       enabled: true
-    livereload:
-      enabled: false
+      path: /h2-console
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: password
+  sql:
+    init:
+      platform: h2
+      mode: always

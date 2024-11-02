@@ -1,33 +1,31 @@
+// Person.java
 package com.example.accessingdatarest;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Column;
+import org.springframework.data.relational.core.mapping.Table;
+import lombok.Data;
 
-@Entity
+@Table("person")
+@Data
 public class Person {
-
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
-	private long id;
-
+	@Column("id")
+	private Long id;
+	@Column("first_name")
 	private String firstName;
+	@Column("last_name")
 	private String lastName;
+	@Column("gender")
+	private String gender;
+	@Column("address")
+	private String address;
 
-	public String getFirstName() {
-		return firstName;
-	}
-
-	public void setFirstName(String firstName) {
+	public Person(Long id, String firstName, String lastName, String gender, String address) {
+		this.id = id;
 		this.firstName = firstName;
-	}
-
-	public String getLastName() {
-		return lastName;
-	}
-
-	public void setLastName(String lastName) {
 		this.lastName = lastName;
+		this.gender = gender;
+		this.address = address;
 	}
 }
