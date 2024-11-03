@@ -6,7 +6,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -22,47 +21,22 @@ public class PersonDeltaService {
     @Autowired
     private JmsTemplate jmsTemplate;
 
-    private List<Person> previousPersons = new ArrayList<>();
+    private Set<Person> previousPersons = new TreeSet<>();
 
     public void calculateAndPushDelta() {
         Set<Person> currentPersons = new TreeSet<>(jdbcTemplate.query("SELECT * FROM person", new PersonRowMapper()));
 
-        // Sort the list using the natural order defined in the Person class
-        List<Person> sortedCurrentPersons = currentPersons.stream()
-                .sorted()
+        List<Person> newPersonsList = currentPersons.stream()
+                .filter(person -> !previousPersons.contains(person))
                 .collect(Collectors.toList());
 
-        List<Person> newPersonsList = new ArrayList<>();
-        List<Person> deletedPersonsList = new ArrayList<>();
-        List<Person> updatedPersonsList = new ArrayList<>();
+        List<Person> deletedPersonsList = previousPersons.stream()
+                .filter(person -> !currentPersons.contains(person))
+                .collect(Collectors.toList());
 
-        int i = 0, j = 0;
-        while (i < previousPersons.size() && j < sortedCurrentPersons.size()) {
-            Person previousPerson = previousPersons.get(i);
-            Person currentPerson = sortedCurrentPersons.get(j);
-
-            if (previousPerson.getId().equals(currentPerson.getId())) {
-                if (!previousPerson.equals(currentPerson)) {
-                    updatedPersonsList.add(currentPerson);
-                }
-                i++;
-                j++;
-            } else if (previousPerson.getId() < currentPerson.getId()) {
-                deletedPersonsList.add(previousPerson);
-                i++;
-            } else {
-                newPersonsList.add(currentPerson);
-                j++;
-            }
-        }
-
-        while (i < previousPersons.size()) {
-            deletedPersonsList.add(previousPersons.get(i++));
-        }
-
-        while (j < sortedCurrentPersons.size()) {
-            newPersonsList.add(sortedCurrentPersons.get(j++));
-        }
+        List<Person> updatedPersonsList = currentPersons.stream()
+                .filter(person -> previousPersons.contains(person) && !previousPersons.contains(person))
+                .collect(Collectors.toList());
 
         if (!newPersonsList.isEmpty()) {
             jmsTemplate.convertAndSend("personDeltaTopic", "New Persons: " + newPersonsList);
@@ -74,6 +48,6 @@ public class PersonDeltaService {
             jmsTemplate.convertAndSend("personDeltaTopic", "Updated Persons: " + updatedPersonsList);
         }
 
-        previousPersons = sortedCurrentPersons;
+        previousPersons = currentPersons;
     }
 }

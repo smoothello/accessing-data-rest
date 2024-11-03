@@ -33,15 +33,15 @@ public class PersonModificationService {
                 if (!persons.isEmpty()) {
                     Person personToUpdate = persons.get(random.nextInt(persons.size()));
                     String updatedGender = random.nextBoolean() ? "Male" : "Female";
-                    jdbcTemplate.update("UPDATE person SET address = ?, gender = ? WHERE id = ?",
-                            "Updated Address " + random.nextInt(100), updatedGender, personToUpdate.getId());
+                    jdbcTemplate.update("UPDATE person SET address = ?, gender = ? WHERE first_name = ? and last_name = ?",
+                            "Updated Address " + random.nextInt(100), updatedGender, personToUpdate.getFirstName(), personToUpdate.getLastName());
                     log.info("Updated: {}", personToUpdate);
                 }
                 break;
             case 2: // Delete an existing person
                 if (!persons.isEmpty()) {
                     Person personToDelete = persons.get(random.nextInt(persons.size()));
-                    jdbcTemplate.update("DELETE FROM person WHERE id = ?", personToDelete.getId());
+                    jdbcTemplate.update("DELETE FROM person WHERE first_name = ? and last_name = ?", personToDelete.getFirstName(),personToDelete.getLastName());
                     log.info("Deleted: {}", personToDelete);
                 }
                 break;

@@ -4,10 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NonNull;
 
-@AllArgsConstructor
 @Data
+@AllArgsConstructor
 public class Person implements Comparable<Person> {
-	private Long id;
 	@NonNull private String firstName;
 	@NonNull private String lastName;
 	private String gender;
