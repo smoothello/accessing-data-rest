@@ -2,18 +2,21 @@ package com.example.accessingdatarest;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 public class PersonDeltaService {
 
     @Autowired
-    private PersonRepository personRepository;
+    private JdbcTemplate jdbcTemplate;
 
     @Autowired
     private JmsTemplate jmsTemplate;
@@ -21,16 +24,21 @@ public class PersonDeltaService {
     private List<Person> previousPersons = new ArrayList<>();
 
     public void calculateAndPushDelta() {
-        List<Person> currentPersons = (List<Person>) personRepository.findAll();
+        List<Person> currentPersons = jdbcTemplate.query("SELECT * FROM \"person\"", new PersonRowMapper());
+
+        // Sort the list by last name and then by first name using streams
+        List<Person> sortedCurrentPersons = currentPersons.stream()
+                .sorted(Comparator.comparing(Person::getLastName).thenComparing(Person::getFirstName))
+                .collect(Collectors.toList());
 
         List<Person> newPersonsList = new ArrayList<>();
         List<Person> deletedPersonsList = new ArrayList<>();
         List<Person> updatedPersonsList = new ArrayList<>();
 
         int i = 0, j = 0;
-        while (i < previousPersons.size() && j < currentPersons.size()) {
+        while (i < previousPersons.size() && j < sortedCurrentPersons.size()) {
             Person previousPerson = previousPersons.get(i);
-            Person currentPerson = currentPersons.get(j);
+            Person currentPerson = sortedCurrentPersons.get(j);
 
             if (previousPerson.getId().equals(currentPerson.getId())) {
                 if (!previousPerson.equals(currentPerson)) {
@@ -51,11 +59,10 @@ public class PersonDeltaService {
             deletedPersonsList.add(previousPersons.get(i++));
         }
 
-        while (j < currentPersons.size()) {
-            newPersonsList.add(currentPersons.get(j++));
+        while (j < sortedCurrentPersons.size()) {
+            newPersonsList.add(sortedCurrentPersons.get(j++));
         }
 
-        // Push results to Artemis topic if the lists are not empty
         if (!newPersonsList.isEmpty()) {
             jmsTemplate.convertAndSend("personDeltaTopic", "New Persons: " + newPersonsList);
         }
@@ -66,7 +73,6 @@ public class PersonDeltaService {
             jmsTemplate.convertAndSend("personDeltaTopic", "Updated Persons: " + updatedPersonsList);
         }
 
-        // Update previousPersons for the next interval
-        previousPersons = currentPersons;
+        previousPersons = sortedCurrentPersons;
     }
 }
