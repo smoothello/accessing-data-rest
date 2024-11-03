@@ -1,4 +1,4 @@
--- data.sql
-INSERT INTO person (first_name, last_name, gender, address) VALUES ('John', 'Doe', 'Male', '123 Main St');
-INSERT INTO person (first_name, last_name, gender, address) VALUES ('Jane', 'Doe', 'Female', '456 Elm St');
-INSERT INTO person (first_name, last_name, gender, address) VALUES ('Jim', 'Beam', 'Male', '789 Oak St');
+INSERT INTO person (first_name, middle_name, last_name, gender, address) VALUES
+('John', 'Michael', 'Doe', 'Male', '123 Main St'),
+('Jane', 'Elizabeth', 'Smith', 'Female', '456 Oak St'),
+('Jim', 'Robert', 'Brown', 'Male', '789 Pine St');

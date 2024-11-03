@@ -1,8 +1,8 @@
--- schema.sql
 CREATE TABLE person (
-    first_name VARCHAR(255),
-    last_name VARCHAR(255),
-    gender VARCHAR(255),
+    first_name VARCHAR(50) NOT NULL,
+    middle_name VARCHAR(50) NOT NULL,
+    last_name VARCHAR(50) NOT NULL,
+    gender VARCHAR(10),
     address VARCHAR(255),
-    PRIMARY KEY (first_name, last_name)
+    PRIMARY KEY (first_name, middle_name, last_name)
 );
