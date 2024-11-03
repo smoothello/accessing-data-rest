@@ -2,6 +2,7 @@ package com.example.accessingdatarest;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -14,9 +15,12 @@ public class PersonDeltaService {
     @Autowired
     private PersonRepository personRepository;
 
+    @Autowired
+    private JmsTemplate jmsTemplate;
+
     private List<Person> previousPersons = new ArrayList<>();
 
-    public void calculateAndLogDelta() {
+    public void calculateAndPushDelta() {
         List<Person> currentPersons = (List<Person>) personRepository.findAll();
 
         List<Person> newPersonsList = new ArrayList<>();
@@ -51,10 +55,16 @@ public class PersonDeltaService {
             newPersonsList.add(currentPersons.get(j++));
         }
 
-        // Log results
-        log.info("New Persons: {}", newPersonsList);
-        log.info("Deleted Persons: {}", deletedPersonsList);
-        log.info("Updated Persons: {}", updatedPersonsList);
+        // Push results to Artemis topic if the lists are not empty
+        if (!newPersonsList.isEmpty()) {
+            jmsTemplate.convertAndSend("personDeltaTopic", "New Persons: " + newPersonsList);
+        }
+        if (!deletedPersonsList.isEmpty()) {
+            jmsTemplate.convertAndSend("personDeltaTopic", "Deleted Persons: " + deletedPersonsList);
+        }
+        if (!updatedPersonsList.isEmpty()) {
+            jmsTemplate.convertAndSend("personDeltaTopic", "Updated Persons: " + updatedPersonsList);
+        }
 
         // Update previousPersons for the next interval
         previousPersons = currentPersons;

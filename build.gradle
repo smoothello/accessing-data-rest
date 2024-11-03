@@ -2,6 +2,7 @@ plugins {
 	id 'org.springframework.boot' version '3.3.5'
 	id 'java'
 	id 'io.freefair.lombok' version '8.10.2'
+	id 'idea'
 }
 
 apply plugin: 'io.spring.dependency-management'
@@ -16,11 +17,21 @@ repositories {
 
 dependencies {
 	developmentOnly('org.springframework.boot:spring-boot-devtools')
+	implementation 'org.springframework.boot:spring-boot-starter-artemis'
+	implementation 'org.apache.activemq:artemis-jakarta-server'
+	implementation 'jakarta.jms:jakarta.jms-api'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jdbc'
 	implementation 'org.springframework.boot:spring-boot-starter-data-rest'
 	implementation 'javax.annotation:javax.annotation-api:1.3.2'
 	runtimeOnly 'com.h2database:h2'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+idea {
+	module {
+		downloadJavadoc = true
+		downloadSources = true
+	}
 }
 
 test {

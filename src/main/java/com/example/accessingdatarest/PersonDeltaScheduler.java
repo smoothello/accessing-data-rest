@@ -10,8 +10,8 @@ public class PersonDeltaScheduler {
     @Autowired
     private PersonDeltaService personDeltaService;
 
-    @Scheduled(fixedRate = 60000,initialDelay = 15000) // Every minute
+    @Scheduled(fixedDelay = 60000) // Every minute
     public void scheduleDeltaCalculationTask() {
-        personDeltaService.calculateAndLogDelta();
+        personDeltaService.calculateAndPushDelta();
     }
 }
