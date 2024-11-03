@@ -1,5 +1,6 @@
 package com.example.accessingdatarest;
 
+import lombok.SneakyThrows;
 import org.springframework.jdbc.core.RowMapper;
 import java.sql.ResultSet;
 import java.sql.SQLException;

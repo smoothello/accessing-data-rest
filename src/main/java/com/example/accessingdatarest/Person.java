@@ -1,21 +1,24 @@
-// Person.java
 package com.example.accessingdatarest;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NonNull;
 
+@AllArgsConstructor
 @Data
-public class Person {
+public class Person implements Comparable<Person> {
 	private Long id;
-	private String firstName;
-	private String lastName;
+	@NonNull private String firstName;
+	@NonNull private String lastName;
 	private String gender;
 	private String address;
 
-	public Person(Long id, String firstName, String lastName, String gender, String address) {
-		this.id = id;
-		this.firstName = firstName;
-		this.lastName = lastName;
-		this.gender = gender;
-		this.address = address;
+	@Override
+	public int compareTo(Person other) {
+		int lastNameComparison = this.lastName.compareTo(other.lastName);
+		if (lastNameComparison != 0) {
+			return lastNameComparison;
+		}
+		return this.firstName.compareTo(other.firstName);
 	}
 }

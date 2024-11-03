@@ -7,8 +7,9 @@ import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,11 +25,11 @@ public class PersonDeltaService {
     private List<Person> previousPersons = new ArrayList<>();
 
     public void calculateAndPushDelta() {
-        List<Person> currentPersons = jdbcTemplate.query("SELECT * FROM \"person\"", new PersonRowMapper());
+        Set<Person> currentPersons = new TreeSet<>(jdbcTemplate.query("SELECT * FROM person", new PersonRowMapper()));
 
-        // Sort the list by last name and then by first name using streams
+        // Sort the list using the natural order defined in the Person class
         List<Person> sortedCurrentPersons = currentPersons.stream()
-                .sorted(Comparator.comparing(Person::getLastName).thenComparing(Person::getFirstName))
+                .sorted()
                 .collect(Collectors.toList());
 
         List<Person> newPersonsList = new ArrayList<>();
