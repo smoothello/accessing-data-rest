@@ -27,7 +27,7 @@ public class PersonDeltaListener {
         PersonDeltaType.UPDATED, persons -> log.info("Received updated persons list: {}", persons)
     );
 
-    @JmsListener(destination = "personDeltaTopic", containerFactory = "jmsListenerContainerFactory")
+    @JmsListener(destination = "/topic/personDelta", containerFactory = "jmsListenerContainerFactory")
     public void receiveMessage(Message message) throws JMSException {
         if (message instanceof TextMessage) {
             String text = ((TextMessage) message).getText();

@@ -6,16 +6,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jms.core.JmsTemplate;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
-
-import jakarta.jms.JMSException;
 import jakarta.jms.Message;
-import jakarta.jms.Session;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.stream.Collectors;
+import java.util.*;
+import org.apache.commons.lang3.tuple.Pair;
 
 @Service
 @Slf4j
@@ -29,6 +24,9 @@ public class PersonDeltaService {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private SimpMessagingTemplate simpMessagingTemplate;
 
     private Set<Person> previousPersons = new TreeSet<>();
 
@@ -47,16 +45,19 @@ public class PersonDeltaService {
                 .filter(person -> previousPersons.contains(person) && !previousPersons.contains(person))
                 .toList();
 
-        Map<List<Person>, PersonDeltaType> deltaMap = Map.of(
-                newPersonsList, PersonDeltaType.NEW,
-                deletedPersonsList, PersonDeltaType.DELETED,
-                updatedPersonsList, PersonDeltaType.UPDATED
-        );
+        List<Pair<List<Person>, PersonDeltaType>> deltaList = new ArrayList<>();
+        deltaList.add(Pair.of(newPersonsList, PersonDeltaType.NEW));
+        deltaList.add(Pair.of(deletedPersonsList, PersonDeltaType.DELETED));
+        deltaList.add(Pair.of(updatedPersonsList, PersonDeltaType.UPDATED));
 
-        deltaMap.forEach((list, type) -> {
+        deltaList.forEach(pair -> {
+            List<Person> list = pair.getLeft();
+            PersonDeltaType type = pair.getRight();
             if (!list.isEmpty()) {
                 try {
-                    sendMessage("personDeltaTopic", objectMapper.writeValueAsString(list), type);
+                    String jsonMessage = objectMapper.writeValueAsString(list);
+                    sendMessage("/topic/personDelta", jsonMessage, type);
+                    //simpMessagingTemplate.convertAndSend("/topic/personDelta", jsonMessage);
                 } catch (JsonProcessingException e) {
                     log.error("Error converting list to JSON", e);
                 }

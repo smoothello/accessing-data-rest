@@ -10,7 +10,7 @@ public class PersonModificationScheduler {
     @Autowired
     private PersonModificationService personModificationService;
 
-    @Scheduled(fixedRate = 30000,initialDelay = 30000) // Every minute
+    @Scheduled(fixedDelay = 30000,initialDelay = 30000) // Every minute
     public void scheduleModificationTask() {
         personModificationService.modifyPersonTable();
     }

@@ -2,8 +2,10 @@ package com.example.accessingdatarest;
 
 import jakarta.jms.ConnectionFactory;
 import lombok.SneakyThrows;
+import org.apache.activemq.artemis.core.config.WildcardConfiguration;
 import org.apache.activemq.artemis.core.config.impl.ConfigurationImpl;
 import org.apache.activemq.artemis.core.server.embedded.EmbeddedActiveMQ;
+import org.apache.activemq.artemis.core.settings.impl.AddressSettings;
 import org.apache.activemq.artemis.jms.client.ActiveMQConnectionFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,7 +22,9 @@ public class JmsConfig {
     public EmbeddedActiveMQ embeddedActiveMQ() {
         EmbeddedActiveMQ embeddedActiveMQ = new EmbeddedActiveMQ();
         org.apache.activemq.artemis.core.config.Configuration artemisConfig = new ConfigurationImpl();
-        artemisConfig.addAcceptorConfiguration("tcp", "tcp://localhost:61616");
+        //artemisConfig.setWildCardConfiguration(new WildcardConfiguration().setDelimiter('/'));
+        artemisConfig.addAcceptorConfiguration("tcp", "tcp://localhost:61613");
+        //artemisConfig.addAddressSetting("/topic/#",new AddressSettings().setRetroactiveMessageCount(100));
         artemisConfig.setPersistenceEnabled(false);
         artemisConfig.setSecurityEnabled(false);
         embeddedActiveMQ.setConfiguration(artemisConfig);
@@ -29,7 +33,7 @@ public class JmsConfig {
 
     @Bean
     public CachingConnectionFactory connectionFactory(EmbeddedActiveMQ embeddedActiveMQ) {
-        ConnectionFactory connectionFactory = new ActiveMQConnectionFactory("tcp://localhost:61616");
+        ConnectionFactory connectionFactory = new ActiveMQConnectionFactory("tcp://localhost:61613");
         return new CachingConnectionFactory(connectionFactory);
     }
 
